@@ -6,27 +6,17 @@ CON_STR = {
     dType.DobotConnect.DobotConnect_NotFound: "DobotConnect_NotFound",
     dType.DobotConnect.DobotConnect_Occupied: "DobotConnect_Occupied"}
 
+zero_x = 158.04
+zero_y = 112.6
+
+zero_r1 = 47.86 #outside
+zero_r0 = -132.18 #inside
+zero_r3 = -39.43 #right
+
 home_x = 8.45
 home_y = -201.8
-home_z = 81.56
-home_r = -135
-
-temp_x1 = 193.32
-temp_y1 = -194.48
-temp_z1 = 15
-temp_r1 = -132.77
-
-temp_x2 = 314.22
-temp_y2 = -5.22
-temp_z2 = 15
-temp_r2 = -129.5
-
-zero_x = 117.04
-zero_y = -147.6
-
-zero_r1 = 67.42 #outside
-zero_r0 = -110.03 #inside
-zero_r3 = -23.72 #right
+home_z = 51.56
+home_r = zero_r0
 
 def dobot_init():
     #Load Dll 
@@ -45,12 +35,11 @@ def dobot_zero(api):
     # Clean Command Queued
     dType.SetQueuedCmdClear(api)
     print ("relocate zero point......")
-    #Async Motion Params Setting
+    #Start to Execute Command Queued 
+    dType.SetQueuedCmdStartExec(api)
     dType.SetHOMEParams(api, home_x, home_y, home_z, home_r, isQueued = 1)
     dType.SetPTPCommonParamsEx(api, 100, 100, isQueued = 1)
     dType.SetHOMECmdEx(api, temp = 0, isQueued = 1)
-    #Start to Execute Command Queued 
-    dType.SetQueuedCmdStartExec(api)
 
 def transfer(X, Y):
     if(X < 3):  #X 0 1 2
@@ -82,9 +71,12 @@ def moveToPoint(api, X, Y):
 
     x, y, r = transfer(X, Y)
     # move to temp
+    # dType.SetPTPCmdEx(api, dType.PTPMode.PTPJUMPXYZMode, zero_x + 31.5 * 4, zero_y + 31.5 * 4.5, 15, zero_r1, isQueued = 1)
     print ("move to ({0}, {1}, {2})".format(x, y ,r))
     # move to point
     dType.SetPTPCmdEx(api, dType.PTPMode.PTPJUMPXYZMode, zero_x + 31.5 * x, zero_y + 31.5 * y, 15, r, isQueued = 1)
+    # back to home
+    # dType.SetPTPCmdEx(api, dType.PTPMode.PTPJUMPXYZMode, home_x, home_y, home_z, home_r ,isQueued = 1)
 
 def dobot_moveDown(api, length):
     position = dType.GetPose(api)
@@ -133,41 +125,14 @@ def attack(api, x_enemy, y_enemy, x_my, y_my):
     dobot_pick(api, x_my, y_my)
     dobot_drop(api, x_enemy, y_enemy)
 
-def test_r():
-    api = dobot_init()
-    # dobot_zero(api)
-    
-    # moveToPoint(api, 4, 4)
-    
-    # for i in range(6, 9):
-    #     # dobot_zero(api)
-    #     for j in range(0, 10):
-    #         print (i, j)
-    #         moveToPoint(api, i, j)
-
-    # moveToPoint(api, 2, 3)
-
-    # dobot_pick(api)
-    # dobot_moveDown(api,22)
-    # dType.dSleep(1000)
-    # dobot_drop(api)
-    
-    # dobot_clean(api)
-    
-    dType.SetQueuedCmdStartExec(api)
-    dType.SetEndEffectorSuctionCupEx(api, 1, 1, isQueued=1)
-    dType.SetPTPCmdEx(api, dType.PTPMode.PTPMOVLXYZINCMode, 0, 0, 0, -10, isQueued=1)
-    dType.dSleep(2000)
-    dType.SetEndEffectorSuctionCupEx(api, 0, 0, isQueued=1)
-    dType.SetPTPCmdEx(api, dType.PTPMode.PTPMOVLXYZINCMode, 0, 0, 0, 10, isQueued=1)
-    dType.DobotExec(api)
-
 if __name__ == '__main__':
     api = dobot_init()
     dobot_zero(api)
-    for i in range(9):
-        for j in range(10):
-            print ("i =", i, " j =", j)
-            moveToPoint(api, i, j)
-    # moveToPoint(api, 3, 9)
-    # moveToPoint(api, 4, 0)
+    moveToPoint(api, 0, 0)
+    # for i in range(9):
+    #     for j in range(10):
+    #         print ("i =", i, " j =", j)
+    #         moveToPoint(api, i, j)
+    # for j in range(5):
+    #     print ("i =", i, " j =", j)
+    #     moveToPoint(api, 1, j)
